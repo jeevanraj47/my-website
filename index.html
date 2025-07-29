@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>CW365 PAYMENT INTERFACE</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(to right, #0047ab, #00bcd4);
+        color: #fff;
+        text-align: center;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        flex-direction: column;
+      }
+
+      input {
+        padding: 12px;
+        margin: 10px;
+        border-radius: 8px;
+        border: none;
+        width: 250px;
+      }
+
+      button {
+        padding: 12px 25px;
+        background-color: #00ffcc;
+        border: none;
+        border-radius: 8px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+
+      button:hover {
+        background-color: #00e6b8;
+      }
+
+      #dashboard h3 {
+        font-size: 28px;
+        color: #ffeb3b;
+      }
+    </style>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        onAuthStateChanged,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+      import {
+        getFirestore,
+        doc,
+        getDoc,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_PROJECT_ID.appspot.com",
+        messagingSenderId: "YOUR_SENDER_ID",
+        appId: "YOUR_APP_ID",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      window.loginUser = async function () {
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("password").value;
+        try {
+          await signInWithEmailAndPassword(auth, email, pass);
+        } catch (error) {
+          alert("Login failed: " + error.message);
+        }
+      };
+
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            document.getElementById("loginSection").style.display = "none";
+            document.getElementById("dashboard").style.display = "block";
+            document.getElementById("balance").innerText =
+              "₹" + docSnap.data().balance;
+          }
+        }
+      });
+    </script>
+  </head>
+
+  <body>
+    <img
+      src="https://yourdomain.com/logo.png"
+      alt="CW365 Logo"
+      style="width: 120px; margin-bottom: 20px"
+    />
+    <div id="loginSection">
+      <h1>CW365 Login</h1>
+      <input type="email" id="email" placeholder="Email" /><br />
+      <input type="password" id="password" placeholder="Password" /><br />
+      <button onclick="loginUser()">Login</button>
+    </div>
+
+    <div id="dashboard" style="display: none">
+      <h2>Welcome to CW365</h2>
+      <p>Your current balance is:</p>
+      <h3 id="balance">₹0</h3>
+    </div>
+  </body>
+</html>
